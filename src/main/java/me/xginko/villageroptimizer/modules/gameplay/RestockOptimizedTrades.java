@@ -61,7 +61,7 @@ public class RestockOptimizedTrades extends VillagerOptimizerModule implements L
         if (event.getRightClicked().getType() != XEntityType.VILLAGER.get()) return;
 
         WrappedVillager wrapped = wrapperCache.get((Villager) event.getRightClicked(), WrappedVillager::new);
-        if (!wrapped.isOptimized()) return;
+        if (wrapped == null || !wrapped.isOptimized()) return;
 
         if (event.getPlayer().hasPermission(Permissions.Bypass.RESTOCK_COOLDOWN.get())) {
             wrapped.restock();

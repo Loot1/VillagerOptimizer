@@ -64,22 +64,20 @@ public class PreventOptimizedDamage extends VillagerOptimizerModule implements L
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void onDamageByEntity(EntityDamageEvent event) {
-        if (
-                event.getEntityType() == XEntityType.VILLAGER.get()
-                && damage_causes_to_cancel.contains(event.getCause())
-                && wrapperCache.get((Villager) event.getEntity(), WrappedVillager::new).isOptimized()
-        ) {
+        if (event.getEntityType() != XEntityType.VILLAGER.get()) return;
+        if (!damage_causes_to_cancel.contains(event.getCause())) return;
+        WrappedVillager wrapped = wrapperCache.get((Villager) event.getEntity(), WrappedVillager::new);
+        if (wrapped != null && wrapped.isOptimized()) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void onKnockbackByEntity(com.destroystokyo.paper.event.entity.EntityKnockbackByEntityEvent event) {
-        if (
-                cancel_knockback
-                && event.getEntityType() == XEntityType.VILLAGER.get()
-                && wrapperCache.get((Villager) event.getEntity(), WrappedVillager::new).isOptimized()
-        ) {
+        if (!cancel_knockback) return;
+        if (event.getEntityType() != XEntityType.VILLAGER.get()) return;
+        WrappedVillager wrapped = wrapperCache.get((Villager) event.getEntity(), WrappedVillager::new);
+        if (wrapped != null && wrapped.isOptimized()) {
             event.setCancelled(true);
         }
     }

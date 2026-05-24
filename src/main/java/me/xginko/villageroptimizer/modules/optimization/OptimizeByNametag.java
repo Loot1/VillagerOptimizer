@@ -1,7 +1,5 @@
 package me.xginko.villageroptimizer.modules.optimization;
 
-import com.cryptomorin.xseries.XEntityType;
-import com.cryptomorin.xseries.XMaterial;
 import me.xginko.villageroptimizer.VillagerOptimizer;
 import me.xginko.villageroptimizer.struct.enums.OptimizationType;
 import me.xginko.villageroptimizer.struct.enums.Permissions;
@@ -12,9 +10,11 @@ import me.xginko.villageroptimizer.utils.KyoriUtil;
 import me.xginko.villageroptimizer.utils.LocationUtil;
 import me.xginko.villageroptimizer.utils.Util;
 import me.xginko.villageroptimizer.wrapper.WrappedVillager;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -72,21 +72,24 @@ public class OptimizeByNametag extends VillagerOptimizerModule implements Listen
         return config.getBoolean(configPath + ".enable", true);
     }
 
-    @SuppressWarnings("deprecation")
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-        if (event.getRightClicked().getType() != XEntityType.VILLAGER.get()) return;
+        if (!(event.getRightClicked() instanceof Villager)) return;
         final Player player = event.getPlayer();
         if (!player.hasPermission(Permissions.Optimize.NAMETAG.get())) return;
 
         final ItemStack usedItem = player.getInventory().getItem(event.getHand());
-        if (usedItem.getType() != XMaterial.NAME_TAG.parseMaterial()) return;
+        if (usedItem.getType() != Material.NAME_TAG) return;
         if (!usedItem.hasItemMeta()) return;
         final ItemMeta meta = usedItem.getItemMeta();
-        if (!meta.hasDisplayName()) return;
 
-        final String nameTagPlainText = ChatColor.stripColor(meta.getDisplayName());
+        // Use Adventure Component API instead of deprecated ChatColor.stripColor / getDisplayName()
+        final Component displayComponent = meta.displayName();
+        if (displayComponent == null) return;
+        final String nameTagPlainText = PlainTextComponentSerializer.plainText().serialize(displayComponent);
+
         final WrappedVillager wrapped = wrapperCache.get((Villager) event.getRightClicked(), WrappedVillager::new);
+        if (wrapped == null) return;
 
         if (nametags.contains(nameTagPlainText.toLowerCase())) {
             if (wrapped.canOptimize(cooldown) || player.hasPermission(Permissions.Bypass.NAMETAG_COOLDOWN.get())) {

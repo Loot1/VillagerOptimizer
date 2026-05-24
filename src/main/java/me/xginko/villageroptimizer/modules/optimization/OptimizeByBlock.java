@@ -112,6 +112,7 @@ public class OptimizeByBlock extends VillagerOptimizerModule implements Listener
             if (distance >= closestDistance) continue;
 
             final WrappedVillager wVillager = wrapperCache.get(villager, WrappedVillager::new);
+            if (wVillager == null) continue;
             if (wVillager.canOptimize(cooldown_millis)) {
                 closestOptimizableVillager = wVillager;
                 closestDistance = distance;
@@ -179,6 +180,7 @@ public class OptimizeByBlock extends VillagerOptimizerModule implements Listener
             if (distance >= closestDistance) continue;
 
             final WrappedVillager wVillager = wrapperCache.get(villager, WrappedVillager::new);
+            if (wVillager == null) continue;
             if (wVillager.isOptimized()) {
                 closestOptimizedVillager = wVillager;
                 closestDistance = distance;

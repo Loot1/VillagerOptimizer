@@ -6,6 +6,8 @@ import me.xginko.villageroptimizer.utils.LocationUtil;
 import me.xginko.villageroptimizer.utils.Util;
 import me.xginko.villageroptimizer.wrapper.WrappedVillager;
 import org.bukkit.Chunk;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Villager;
@@ -16,6 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 import java.time.Duration;
@@ -58,66 +61,48 @@ public class VillagerChunkLimit extends VillagerOptimizerModule implements Runna
         List<String> defaults = Stream.of(
                 "NONE", "NITWIT", "SHEPHERD", "FISHERMAN", "BUTCHER", "CARTOGRAPHER", "LEATHERWORKER",
                         "FLETCHER", "MASON", "FARMER", "ARMORER", "TOOLSMITH", "WEAPONSMITH", "CLERIC", "LIBRARIAN")
-                .filter(profession -> {
-                    try {
-                        // Make sure no scary warnings appear when creating config defaults
-                        Villager.Profession.valueOf(profession);
-                        return true;
-                    } catch (IllegalArgumentException e) {
-                        return false;
-                    }
-                }).toList();
+                .filter(profession -> Registry.VILLAGER_PROFESSION.get(
+                        NamespacedKey.minecraft(profession.toLowerCase())) != null)
+                .toList();
         this.use_whitelist = config.getBoolean(configPath + ".whitelist.enable", false,
                 "Enable if you only want to manage villager counts for certain profession types.");
         this.profession_whitelist = config.getList(configPath + ".whitelist.professions", Arrays.asList("NONE", "NITWIT"),
                         "Professions in this list will not be touched by the chunk limit.")
                 .stream()
-                .map(configuredProfession -> {
-                    try {
-                        return Villager.Profession.valueOf(configuredProfession);
-                    } catch (IllegalArgumentException e) {
-                        warn("(whitelist) Villager profession '" + configuredProfession +
-                                "' not recognized. Make sure you're using the correct profession enums from " +
-                                "https://jd.papermc.io/paper/1.20/org/bukkit/entity/Villager.Profession.html.");
-                        return null;
-                    }
-                })
+                .map(configuredProfession -> parseProfession(configuredProfession, "(whitelist)"))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(HashSet::new));
         this.non_optimized_max_per_chunk = config.getInt(configPath + ".unoptimized.max-per-chunk", 20,
                 "The maximum amount of unoptimized villagers per chunk.");
         this.non_optimized_removal_priority = config.getList(configPath + ".unoptimized.removal-priority", new ArrayList<>(defaults),
                         "Professions that are in the top of the list are going to be scheduled for removal first.\n" +
-                        "Use enums from https://jd.papermc.io/paper/1.20/org/bukkit/entity/Villager.Profession.html")
+                        "Use enums from https://jd.papermc.io/paper/1.21/org/bukkit/entity/Villager.Profession.html")
                 .stream()
-                .map(configuredProfession -> {
-                    try {
-                        return Villager.Profession.valueOf(configuredProfession);
-                    } catch (IllegalArgumentException e) {
-                        warn("(unoptimized) Villager profession '" + configuredProfession +
-                             "' not recognized. Make sure you're using the correct profession enums from " +
-                             "https://jd.papermc.io/paper/1.20/org/bukkit/entity/Villager.Profession.html.");
-                        return null;
-                    }
-                })
+                .map(p -> parseProfession(p, "(unoptimized)"))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         this.optimized_max_per_chunk = config.getInt(configPath + ".optimized.max-per-chunk", 60,
                 "The maximum amount of optimized villagers per chunk.");
         this.optimized_removal_priority = config.getList(configPath + ".optimized.removal-priority", new ArrayList<>(defaults))
                 .stream()
-                .map(configuredProfession -> {
-                    try {
-                        return Villager.Profession.valueOf(configuredProfession);
-                    } catch (IllegalArgumentException e) {
-                        warn("(optimized) Villager profession '" + configuredProfession + "' not recognized. " +
-                             "Make sure you're using the correct profession enums from " +
-                             "https://jd.papermc.io/paper/1.20/org/bukkit/entity/Villager.Profession.html.");
-                        return null;
-                    }
-                })
+                .map(p -> parseProfession(p, "(optimized)"))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Parses a villager profession from its name using the Paper Registry (1.21+).
+     * Villager.Profession.valueOf() is deprecated for removal since 1.21.
+     */
+    private @Nullable Villager.Profession parseProfession(@NotNull String name, @NotNull String context) {
+        Villager.Profession profession = Registry.VILLAGER_PROFESSION.get(
+                NamespacedKey.minecraft(name.toLowerCase()));
+        if (profession == null) {
+            warn(context + " Villager profession '" + name +
+                    "' not recognized. Make sure you're using the correct profession names from " +
+                    "https://jd.papermc.io/paper/1.21/org/bukkit/entity/Villager.Profession.html.");
+        }
+        return profession;
     }
 
     @Override
@@ -153,18 +138,16 @@ public class VillagerChunkLimit extends VillagerOptimizerModule implements Runna
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void onCreatureSpawn(CreatureSpawnEvent event) {
         if (event.getEntityType() == XEntityType.VILLAGER.get()) {
-            scheduling.regionSpecificScheduler(event.getLocation()).run(() -> {
-                manageVillagerCount(event.getEntity().getChunk());
-            });
+            scheduling.regionSpecificScheduler(event.getLocation()).run(
+                    () -> manageVillagerCount(event.getEntity().getChunk()));
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private void onInteract(PlayerInteractEntityEvent event) {
         if (event.getRightClicked().getType() == XEntityType.VILLAGER.get()) {
-            scheduling.regionSpecificScheduler(event.getRightClicked().getLocation()).run(() -> {
-                manageVillagerCount(event.getRightClicked().getChunk());
-            });
+            scheduling.regionSpecificScheduler(event.getRightClicked().getLocation()).run(
+                    () -> manageVillagerCount(event.getRightClicked().getChunk()));
         }
     }
 
@@ -185,7 +168,10 @@ public class VillagerChunkLimit extends VillagerOptimizerModule implements Runna
             // Ignore villager if profession is not in the whitelist
             if (use_whitelist && profession_whitelist.contains(villager.getProfession())) continue;
 
-            if (wrapperCache.get(villager, WrappedVillager::new).isOptimized()) {
+            WrappedVillager wrapped = wrapperCache.get(villager, WrappedVillager::new);
+            if (wrapped == null) continue;
+
+            if (wrapped.isOptimized()) {
                 optimized_villagers.add(villager);
             } else {
                 not_optimized_villagers.add(villager);
@@ -224,7 +210,7 @@ public class VillagerChunkLimit extends VillagerOptimizerModule implements Runna
                 Villager villager = optimized_villagers.get(i);
                 scheduling.entitySpecificScheduler(villager).run(kill -> {
                     villager.remove();
-                    if (log_enabled) info("Removed unoptimized villager with profession '" +
+                    if (log_enabled) info("Removed optimized villager with profession '" +
                             Util.toNiceString(villager.getProfession()) + "' at " + LocationUtil.toString(villager.getLocation()));
                 }, null);
             }

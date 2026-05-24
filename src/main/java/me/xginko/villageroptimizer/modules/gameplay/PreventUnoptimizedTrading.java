@@ -49,8 +49,9 @@ public class PreventUnoptimizedTrading extends VillagerOptimizerModule implement
     private void onTradeOpen(TradeSelectEvent event) {
         if (event.getInventory().getType() != InventoryType.MERCHANT) return;
         if (event.getWhoClicked().hasPermission(Permissions.Bypass.TRADE_PREVENTION.get())) return;
-        if (!(event.getInventory().getHolder() instanceof Villager)) return;
-        if (wrapperCache.get((Villager) event.getInventory().getHolder(), WrappedVillager::new).isOptimized()) return;
+        if (!(event.getInventory().getHolder() instanceof Villager villager)) return;
+        WrappedVillager wrapped = wrapperCache.get(villager, WrappedVillager::new);
+        if (wrapped != null && wrapped.isOptimized()) return;
 
         event.setCancelled(true);
 
@@ -64,8 +65,9 @@ public class PreventUnoptimizedTrading extends VillagerOptimizerModule implement
     private void onInventoryClick(InventoryClickEvent event) {
         if (event.getInventory().getType() != InventoryType.MERCHANT) return;
         if (event.getWhoClicked().hasPermission(Permissions.Bypass.TRADE_PREVENTION.get())) return;
-        if (!(event.getInventory().getHolder() instanceof Villager)) return;
-        if (wrapperCache.get((Villager) event.getInventory().getHolder(), WrappedVillager::new).isOptimized()) return;
+        if (!(event.getInventory().getHolder() instanceof Villager villager)) return;
+        WrappedVillager wrapped = wrapperCache.get(villager, WrappedVillager::new);
+        if (wrapped != null && wrapped.isOptimized()) return;
 
         event.setCancelled(true);
 

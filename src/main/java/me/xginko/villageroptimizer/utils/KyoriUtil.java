@@ -1,21 +1,25 @@
 package me.xginko.villageroptimizer.utils;
 
-import me.xginko.villageroptimizer.VillagerOptimizer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 
 public class KyoriUtil {
 
+    /**
+     * Sends an Adventure Component message.
+     * Paper 1.19+ natively implements Audience on CommandSender.
+     */
     public static void sendMessage(@NotNull CommandSender sender, @NotNull Component message) {
-        VillagerOptimizer.audiences().sender(sender).sendMessage(message);
+        sender.sendMessage(message);
     }
 
-    public static void sendActionBar(@NotNull CommandSender sender, @NotNull Component message) {
-        VillagerOptimizer.audiences().sender(sender).sendActionBar(message);
+    public static void sendActionBar(@NotNull Player player, @NotNull Component message) {
+        player.sendActionBar(message);
     }
 
     public static @NotNull Component toUpperCase(@NotNull Component input, @NotNull Locale locale) {

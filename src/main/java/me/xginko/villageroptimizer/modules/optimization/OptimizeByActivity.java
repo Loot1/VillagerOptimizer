@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -88,7 +89,7 @@ public class OptimizeByActivity extends VillagerOptimizerModule implements Liste
     }
 
     private @NotNull RegionData getRegionData(Location location) {
-        return regionDataCache.get(getRegion(location), RegionData::new);
+        return Objects.requireNonNull(regionDataCache.get(getRegion(location), RegionData::new));
     }
 
     private @NotNull BlockRegion2D getRegion(Location location) {
@@ -129,7 +130,7 @@ public class OptimizeByActivity extends VillagerOptimizerModule implements Liste
                             if (entity.getType() == XEntityType.VILLAGER.get()) {
                                 WrappedVillager wrappedVillager = wrapperCache.get((Villager) entity, WrappedVillager::new);
 
-                                if (wrappedVillager.isOptimized()) {
+                                if (wrappedVillager == null || wrappedVillager.isOptimized()) {
                                     return;
                                 }
 
@@ -196,7 +197,7 @@ public class OptimizeByActivity extends VillagerOptimizerModule implements Liste
                             if (entity.getType() == XEntityType.VILLAGER.get()) {
                                 WrappedVillager wrappedVillager = wrapperCache.get((Villager) entity, WrappedVillager::new);
 
-                                if (wrappedVillager.isOptimized()) {
+                                if (wrappedVillager == null || wrappedVillager.isOptimized()) {
                                     return;
                                 }
 

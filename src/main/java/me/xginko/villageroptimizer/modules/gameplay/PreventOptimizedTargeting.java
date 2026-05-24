@@ -39,11 +39,9 @@ public class PreventOptimizedTargeting extends VillagerOptimizerModule implement
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void onTarget(EntityTargetEvent event) {
         final Entity target = event.getTarget();
-        if (
-                target != null
-                && target.getType() == XEntityType.VILLAGER.get()
-                && wrapperCache.get((Villager) target, WrappedVillager::new).isOptimized()
-        ) {
+        if (target == null || target.getType() != XEntityType.VILLAGER.get()) return;
+        WrappedVillager wrapped = wrapperCache.get((Villager) target, WrappedVillager::new);
+        if (wrapped != null && wrapped.isOptimized()) {
             event.setTarget(null);
             event.setCancelled(true);
         }
@@ -52,23 +50,20 @@ public class PreventOptimizedTargeting extends VillagerOptimizerModule implement
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void onEntityTargetVillager(com.destroystokyo.paper.event.entity.EntityPathfindEvent event) {
         final Entity target = event.getTargetEntity();
-        if (
-                target != null
-                && target.getType() == XEntityType.VILLAGER.get()
-                && wrapperCache.get((Villager) target, WrappedVillager::new).isOptimized()
-        ) {
+        if (target == null || target.getType() != XEntityType.VILLAGER.get()) return;
+        WrappedVillager wrapped = wrapperCache.get((Villager) target, WrappedVillager::new);
+        if (wrapped != null && wrapped.isOptimized()) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void onEntityAttackVillager(EntityDamageByEntityEvent event) {
-        if (
-                event.getEntityType() == XEntityType.VILLAGER.get()
-                && event.getDamager() instanceof Mob
-                && wrapperCache.get((Villager) event.getEntity(), WrappedVillager::new).isOptimized()
-        ) {
-            ((Mob) event.getDamager()).setTarget(null);
+        if (event.getEntityType() != XEntityType.VILLAGER.get()) return;
+        if (!(event.getDamager() instanceof Mob mob)) return;
+        WrappedVillager wrapped = wrapperCache.get((Villager) event.getEntity(), WrappedVillager::new);
+        if (wrapped != null && wrapped.isOptimized()) {
+            mob.setTarget(null);
         }
     }
  }

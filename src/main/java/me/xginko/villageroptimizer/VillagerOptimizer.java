@@ -9,7 +9,6 @@ import me.xginko.villageroptimizer.struct.enums.Permissions;
 import me.xginko.villageroptimizer.modules.VillagerOptimizerModule;
 import me.xginko.villageroptimizer.utils.Util;
 import me.xginko.villageroptimizer.wrapper.WrappedVillager;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -51,7 +50,6 @@ public final class VillagerOptimizer extends JavaPlugin {
     private static Cache<Villager, WrappedVillager> wrapperCache;
     private static Map<String, LanguageCache> languageCacheMap;
     private static Config config;
-    private static BukkitAudiences audiences;
     private static ComponentLogger logger;
     private static Metrics bStats;
 
@@ -68,7 +66,6 @@ public final class VillagerOptimizer extends JavaPlugin {
         MorePaperLib morePaperLib = new MorePaperLib(this);
         commandRegistration = morePaperLib.commandRegistration();
         scheduling = morePaperLib.scheduling();
-        audiences = BukkitAudiences.create(this);
         logger = ComponentLogger.logger(getLogger().getName());
         bStats = new Metrics(this, 19954);
 
@@ -82,7 +79,11 @@ public final class VillagerOptimizer extends JavaPlugin {
         }
 
         try {
-            getDataFolder().mkdirs();
+            if (!getDataFolder().mkdirs() && !getDataFolder().exists()) {
+                logger.error("Failed to create plugin directory! Cannot enable!");
+                getServer().getPluginManager().disablePlugin(this);
+                return;
+            }
         } catch (Exception e) {
             logger.error("Failed to create plugin directory! Cannot enable!", e);
             getServer().getPluginManager().disablePlugin(this);
@@ -142,10 +143,6 @@ public final class VillagerOptimizer extends JavaPlugin {
             scheduling.cancelGlobalTasks();
             scheduling = null;
         }
-        if (audiences != null) {
-            audiences.close();
-            audiences = null;
-        }
         if (bStats != null) {
             bStats.shutdown();
             bStats = null;
@@ -179,10 +176,6 @@ public final class VillagerOptimizer extends JavaPlugin {
 
     public static @NotNull ComponentLogger logger() {
         return logger;
-    }
-
-    public static @NotNull BukkitAudiences audiences() {
-        return audiences;
     }
 
     public static @NotNull LanguageCache getLang(Locale locale) {
@@ -246,7 +239,11 @@ public final class VillagerOptimizer extends JavaPlugin {
             final File langDirectory = new File(getDataFolder() + "/lang");
             Files.createDirectories(langDirectory.toPath());
             final Pattern langPattern = Pattern.compile("([a-z]{1,3}_[a-z]{1,3})(\\.yml)", Pattern.CASE_INSENSITIVE);
-            return Stream.concat(pluginJar.stream().map(ZipEntry::getName), Arrays.stream(langDirectory.listFiles()).map(File::getName))
+            final File[] langFiles = langDirectory.listFiles();
+            final Stream<String> dirStream = langFiles != null
+                    ? Arrays.stream(langFiles).map(File::getName)
+                    : Stream.empty();
+            return Stream.concat(pluginJar.stream().map(ZipEntry::getName), dirStream)
                     .map(langPattern::matcher)
                     .filter(Matcher::find)
                     .map(matcher -> matcher.group(1))

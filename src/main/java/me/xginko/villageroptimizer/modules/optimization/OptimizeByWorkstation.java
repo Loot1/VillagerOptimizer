@@ -95,9 +95,10 @@ public class OptimizeByWorkstation extends VillagerOptimizerModule implements Li
                 scheduling.entitySpecificScheduler(villager).run(() -> {
                     if (villager.getProfession() != workstationProfession) return;
                     WrappedVillager wrapped = wrapperCache.get(villager, WrappedVillager::new);
+                    if (wrapped == null) return;
 
                     Location jobSite = wrapped.getJobSite();
-                    if (jobSite == null || jobSite.getWorld().getUID() != workstationLoc.getWorld().getUID()) return;
+                    if (jobSite == null || !jobSite.getWorld().getUID().equals(workstationLoc.getWorld().getUID())) return;
                     if (LocationUtil.relDistance3DSquared(jobSite, workstationLoc) > 1) return;
 
                     if (!wrapped.canOptimize(cooldown_millis) && !player.hasPermission(Permissions.Bypass.WORKSTATION_COOLDOWN.get())) {
@@ -172,6 +173,7 @@ public class OptimizeByWorkstation extends VillagerOptimizerModule implements Li
             if (distance >= closestDistance) continue;
 
             WrappedVillager wrapped = wrapperCache.get(villager, WrappedVillager::new);
+            if (wrapped == null) continue;
 
             if (wrapped.isOptimized()) {
                 closestOptimized = wrapped;

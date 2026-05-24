@@ -23,8 +23,13 @@ import java.util.concurrent.TimeUnit;
 
 public class LevelOptimizedProfession extends VillagerOptimizerModule implements Listener {
 
-    private static final PotionEffect SUPER_SLOWNESS = new PotionEffect(
-            XPotion.SLOWNESS.getPotionEffectType(), 120, 120, false, false);
+    private static final PotionEffect SUPER_SLOWNESS;
+
+    static {
+        var slownessType = XPotion.SLOWNESS.getPotionEffectType();
+        if (slownessType == null) throw new ExceptionInInitializerError("Could not resolve SLOWNESS PotionEffectType");
+        SUPER_SLOWNESS = new PotionEffect(slownessType, 120, 120, false, false);
+    }
 
     private final boolean notify_player;
     private final long cooldown_millis;
@@ -65,7 +70,7 @@ public class LevelOptimizedProfession extends VillagerOptimizerModule implements
                 && event.getInventory().getHolder() instanceof Villager villager
         ) {
             final WrappedVillager wVillager = wrapperCache.get(villager, WrappedVillager::new);
-            if (!wVillager.isOptimized()) return;
+            if (wVillager == null || !wVillager.isOptimized()) return;
 
             if (wVillager.canLevelUp(cooldown_millis)) {
                 if (wVillager.calculateLevel() <= villager.getVillagerLevel()) return;
