@@ -4,7 +4,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.translation.TranslationRegistry;
 import net.kyori.adventure.translation.Translator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,9 +24,10 @@ public enum TranslatableMapper implements BiConsumer<TranslatableComponent, Cons
             final @NotNull TranslatableComponent translatableComponent,
             final @NotNull Consumer<Component> componentConsumer
     ) {
+        final Locale locale = Locale.getDefault();
         for (final Translator source : GlobalTranslator.translator().sources()) {
-            if (source instanceof TranslationRegistry && ((TranslationRegistry) source).contains(translatableComponent.key())) {
-                componentConsumer.accept(GlobalTranslator.render(translatableComponent, Locale.getDefault()));
+            if (source.translate(translatableComponent.key(), locale) != null) {
+                componentConsumer.accept(GlobalTranslator.render(translatableComponent, locale));
                 return;
             }
         }
@@ -36,8 +36,8 @@ public enum TranslatableMapper implements BiConsumer<TranslatableComponent, Cons
             return;
         }
         for (final Translator source : GlobalTranslator.translator().sources()) {
-            if (source instanceof TranslationRegistry && ((TranslationRegistry) source).contains(fallback)) {
-                componentConsumer.accept(GlobalTranslator.render(Component.translatable(fallback), Locale.getDefault()));
+            if (source.translate(fallback, locale) != null) {
+                componentConsumer.accept(GlobalTranslator.render(Component.translatable(fallback), locale));
                 return;
             }
         }
