@@ -22,9 +22,10 @@ public class PreventUnoptimizedTrading extends VillagerOptimizerModule implement
     public PreventUnoptimizedTrading() {
         super("gameplay.prevent-trading-with-unoptimized");
         config.master().addComment(configPath + ".enable",
-                "Will prevent players from selecting and using trades of unoptimized villagers.\n" +
-                "Use this if you have a lot of villagers and therefore want to force your players to optimize them.\n" +
-                "Inventories can still be opened so players can move villagers around.");
+                """
+                        Will prevent players from selecting and using trades of unoptimized villagers.
+                        Use this if you have a lot of villagers and therefore want to force your players to optimize them.
+                        Inventories can still be opened so players can move villagers around.""");
         this.notify_player = config.getBoolean(configPath + ".notify-player", true,
                 "Sends players a message when they try to trade with an unoptimized villager.");
     }

@@ -11,6 +11,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,14 +27,14 @@ public class ReloadSubCmd extends SubCommand {
 
     @Override
     public @Nullable List<String> onTabComplete(
-            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String[] args
+            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String @NonNull [] args
     ) {
         return Collections.emptyList();
     }
 
     @Override
     public boolean onCommand(
-            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String[] args
+            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String @NonNull [] args
     ) {
         if (!sender.hasPermission(Permissions.Commands.RELOAD.get())) {
             KyoriUtil.sendMessage(sender, VillagerOptimizer.getLang(sender).no_permission);

@@ -14,6 +14,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,14 +31,14 @@ public class VersionSubCmd extends SubCommand {
 
     @Override
     public @Nullable List<String> onTabComplete(
-            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String[] args
+            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String @NonNull [] args
     ) {
         return Collections.emptyList();
     }
 
     @Override
     public boolean onCommand(
-            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String[] args
+            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String @NonNull [] args
     ) {
         if (!sender.hasPermission(Permissions.Commands.VERSION.get())) {
             KyoriUtil.sendMessage(sender, VillagerOptimizer.getLang(sender).no_permission);
@@ -51,13 +52,13 @@ public class VersionSubCmd extends SubCommand {
             name = pluginMeta.getName();
             version = pluginMeta.getVersion();
             website = pluginMeta.getWebsite();
-            author = pluginMeta.getAuthors().get(0);
+            author = pluginMeta.getAuthors().getFirst();
         } catch (Throwable versionIncompatible) {
             final PluginDescriptionFile pluginYML = VillagerOptimizer.getInstance().getDescription();
             name = pluginYML.getName();
             version = pluginYML.getVersion();
             website = pluginYML.getWebsite();
-            author = pluginYML.getAuthors().get(0);
+            author = pluginYML.getAuthors().getFirst();
         }
 
         KyoriUtil.sendMessage(sender, Component.newline()

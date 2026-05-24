@@ -14,10 +14,11 @@ public class MakeVillagersSpawnAdult extends VillagerOptimizerModule implements 
     public MakeVillagersSpawnAdult() {
         super("gameplay.villagers-spawn-as-adults");
         config.master().addComment(configPath + ".enable",
-                "Spawned villagers will immediately be adults.\n" +
-                "This is to save some more resources as players don't have to keep unoptimized\n" +
-                "villagers loaded because they have to wait for them to turn into adults before they can\n" +
-                "optimize them.");
+                """
+                        Spawned villagers will immediately be adults.
+                        This is to save some more resources as players don't have to keep unoptimized
+                        villagers loaded because they have to wait for them to turn into adults before they can
+                        optimize them.""");
     }
 
     @Override

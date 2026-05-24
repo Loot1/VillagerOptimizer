@@ -29,9 +29,10 @@ public class PreventOptimizedDamage extends VillagerOptimizerModule implements L
                 "Prevents optimized villagers from getting knocked back by an attacking entity");
         this.damage_causes_to_cancel = config.getList(configPath + ".damage-causes-to-cancel",
                 Arrays.stream(EntityDamageEvent.DamageCause.values()).map(Enum::name).sorted().collect(Collectors.toList()),
-                "These are all current entries in the game. Remove what you do not need blocked.\n" +
-                "If you want a description or need to add a previously removed type, refer to:\n" +
-                "https://jd.papermc.io/paper/1.20/org/bukkit/event/entity/EntityDamageEvent.DamageCause.html")
+                        """
+                                These are all current entries in the game. Remove what you do not need blocked.
+                                If you want a description or need to add a previously removed type, refer to:
+                                https://jd.papermc.io/paper/1.20/org/bukkit/event/entity/EntityDamageEvent.DamageCause.html""")
                 .stream()
                 .map(configuredDamageCause -> {
                     try {

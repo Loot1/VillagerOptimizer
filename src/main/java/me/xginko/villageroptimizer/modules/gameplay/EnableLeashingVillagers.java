@@ -50,7 +50,7 @@ public class EnableLeashingVillagers extends VillagerOptimizerModule implements 
         if (event.getRightClicked().getType() != XEntityType.VILLAGER.get()) return;
         final Player player = event.getPlayer();
         final ItemStack handItem = player.getInventory().getItem(event.getHand());
-        if (handItem == null || handItem.getType() != XMaterial.LEAD.parseMaterial()) return;
+        if (handItem.getType() != XMaterial.LEAD.parseMaterial()) return;
 
         final Villager villager = (Villager) event.getRightClicked();
         if (villager.isLeashed()) return;

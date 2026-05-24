@@ -32,10 +32,11 @@ public class Config {
         this.cache_keep_time = Duration.ofSeconds(Math.max(1, getInt("general.cache-keep-time-seconds", 30,
                 "The amount of time in seconds a villager will be kept in the plugin's cache.")));
         this.support_other_plugins = getBoolean("general.support-avl-villagers", false,
-                "Enable if you have previously used AntiVillagerLag\n" +
-                        "(https://www.spigotmc.org/resources/antivillagerlag.102949/).\n" +
-                        "Tries to read pre-existing info like optimization state so players\n" +
-                        "don't need to reoptimize their villagers.");
+                """
+                        Enable if you have previously used AntiVillagerLag
+                        (https://www.spigotmc.org/resources/antivillagerlag.102949/).
+                        Tries to read pre-existing info like optimization state so players
+                        don't need to reoptimize their villagers.""");
     }
 
     public void saveConfig() {
@@ -52,9 +53,10 @@ public class Config {
         this.createTitledSection("Optimization", "optimization-methods");
         this.config.addDefault("optimization-methods.commands.unoptimizevillagers", null);
         this.config.addComment("optimization-methods.commands",
-                "If you want to disable commands, negate the following permissions:\n" +
-                "villageroptimizer.cmd.optimize\n" +
-                "villageroptimizer.cmd.unoptimize");
+                """
+                        If you want to disable commands, negate the following permissions:
+                        villageroptimizer.cmd.optimize
+                        villageroptimizer.cmd.unoptimize""");
         this.config.addDefault("optimization-methods.nametag-optimization.enable", true);
         this.createTitledSection("Villager Chunk Limit", "villager-chunk-limit");
         this.createTitledSection("Gameplay", "gameplay");

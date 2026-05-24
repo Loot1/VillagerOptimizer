@@ -44,9 +44,10 @@ public class VillagerChunkLimit extends VillagerOptimizerModule implements Runna
         config.master().addComment(configPath + ".enable",
                 "Checks chunks for too many villagers and removes excess villagers based on priority.");
         this.check_period = config.getInt(configPath + ".check-period-in-ticks", 600,
-                "Check all loaded chunks every X ticks. 1 second = 20 ticks\n" +
-                "A shorter delay in between checks is more efficient but is also more resource intense.\n" +
-                "A larger delay is less resource intense but could become inefficient.");
+                """
+                        Check all loaded chunks every X ticks. 1 second = 20 ticks
+                        A shorter delay in between checks is more efficient but is also more resource intense.
+                        A larger delay is less resource intense but could become inefficient.""");
         this.skip_unloaded_chunks = config.getBoolean(configPath + ".skip-not-fully-loaded-chunks", true,
                 "Does not check chunks that don't have their entities loaded.");
         this.checked_chunks = new ExpiringSet<>(Duration.ofSeconds(
@@ -65,7 +66,7 @@ public class VillagerChunkLimit extends VillagerOptimizerModule implements Runna
                     } catch (IllegalArgumentException e) {
                         return false;
                     }
-                }).collect(Collectors.toList());
+                }).toList();
         this.use_whitelist = config.getBoolean(configPath + ".whitelist.enable", false,
                 "Enable if you only want to manage villager counts for certain profession types.");
         this.profession_whitelist = config.getList(configPath + ".whitelist.professions", Arrays.asList("NONE", "NITWIT"),

@@ -1,4 +1,4 @@
-name: VillagerOptimizer
+name: ${project.name}
 version: '${project.version}'
 main: me.xginko.villageroptimizer.VillagerOptimizer
 authors: [ xGinko ]

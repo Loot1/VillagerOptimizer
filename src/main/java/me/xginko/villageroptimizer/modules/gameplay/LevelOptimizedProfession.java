@@ -62,9 +62,8 @@ public class LevelOptimizedProfession extends VillagerOptimizerModule implements
     private void onTradeScreenClose(InventoryCloseEvent event) {
         if (
                 event.getInventory().getType() == InventoryType.MERCHANT
-                && event.getInventory().getHolder() instanceof Villager
+                && event.getInventory().getHolder() instanceof Villager villager
         ) {
-            final Villager villager = (Villager) event.getInventory().getHolder();
             final WrappedVillager wVillager = wrapperCache.get(villager, WrappedVillager::new);
             if (!wVillager.isOptimized()) return;
 

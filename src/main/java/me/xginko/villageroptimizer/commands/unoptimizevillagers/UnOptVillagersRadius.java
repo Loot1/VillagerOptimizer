@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,27 +36,25 @@ public class UnOptVillagersRadius extends VillagerOptimizerCommand {
 
     @Override
     public @Nullable List<String> onTabComplete(
-            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String[] args
+            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String @NonNull [] args
     ) {
         return args.length == 1 ? RADIUS_SUGGESTIONS : Collections.emptyList();
     }
 
     @Override
     public boolean onCommand(
-            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String[] args
+            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String @NonNull [] args
     ) {
         if (!sender.hasPermission(Permissions.Commands.UNOPTIMIZE_RADIUS.get())) {
             KyoriUtil.sendMessage(sender, VillagerOptimizer.getLang(sender).no_permission);
             return true;
         }
 
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             KyoriUtil.sendMessage(sender, Component.text("This command can only be executed by a player.")
                     .color(NamedTextColor.RED).decorate(TextDecoration.BOLD));
             return true;
         }
-
-        Player player = (Player) sender;
 
         if (args.length != 1) {
             VillagerOptimizer.getLang(player.locale()).command_specify_radius
@@ -93,6 +92,7 @@ public class UnOptVillagersRadius extends VillagerOptimizerCommand {
                 if (profession.equals(Villager.Profession.NITWIT) || profession.equals(Villager.Profession.NONE)) continue;
 
                 WrappedVillager wVillager = VillagerOptimizer.wrappers().get(villager, WrappedVillager::new);
+                if(wVillager == null) continue;
 
                 if (wVillager.isOptimized()) {
                     VillagerUnoptimizeEvent unOptimizeEvent = new VillagerUnoptimizeEvent(wVillager, player, OptimizationType.COMMAND);

@@ -14,6 +14,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,7 +34,7 @@ public class VillagerOptimizerCmd extends VillagerOptimizerCommand {
 
     @Override
     public @Nullable List<String> onTabComplete(
-            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String[] args
+            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String @NonNull [] args
     ) {
         if (args.length == 1) {
             return tabCompletes;
@@ -52,7 +53,7 @@ public class VillagerOptimizerCmd extends VillagerOptimizerCommand {
 
     @Override
     public boolean onCommand(
-            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String[] args
+            @NotNull CommandSender sender, @NotNull Command command, @NotNull String commandLabel, @NotNull String @NonNull [] args
     ) {
         if (args.length >= 1) {
             for (SubCommand subCommand : subCommands) {

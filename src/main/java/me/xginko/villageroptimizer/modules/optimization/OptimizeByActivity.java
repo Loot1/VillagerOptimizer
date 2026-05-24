@@ -59,9 +59,10 @@ public class OptimizeByActivity extends VillagerOptimizerModule implements Liste
                 "The radius in blocks in which activity will be grouped together and measured.");
         this.regionDataCache = Caffeine.newBuilder().expireAfterWrite(Duration.ofMillis(
                 config.getInt(configPath + ".data-keep-time-millis", 10000,
-                        "The time in milliseconds before a region and its data will be expired\n" +
-                                "if no activity has been detected.\n" +
-                                "For proper functionality, needs to be at least as long as your pause time."))).build();
+                        """
+                                The time in milliseconds before a region and its data will be expired
+                                if no activity has been detected.
+                                For proper functionality, needs to be at least as long as your pause time."""))).build();
 
         this.pathfindLimit = config.getInt(configPath + ".limits.pathfind-event", 150);
         this.entityInteractLimit = config.getInt(configPath + ".limits.interact-event", 50);
