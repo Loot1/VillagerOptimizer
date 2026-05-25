@@ -90,43 +90,12 @@ public final class VillagerOptimizer extends JavaPlugin {
             return;
         }
 
-        logger.info(Component.text("╭────────────────────────────────────────────────────────────╮").style(Util.PL_STYLE));
-        logger.info(Component.text("│                                                            │").style(Util.PL_STYLE));
-        logger.info(Component.text("│                                                            │").style(Util.PL_STYLE));
-        logger.info(Component.text("│             _   __ _  __ __                                │").style(Util.PL_STYLE));
-        logger.info(Component.text("│            | | / /(_)/ // /___ _ ___ _ ___  ____           │").style(Util.PL_STYLE));
-        logger.info(Component.text("│            | |/ // // // // _ `// _ `// -_)/ __/           │").style(Util.PL_STYLE));
-        logger.info(Component.text("│            |___//_//_//_/ \\_,_/ \\_, / \\__//_/              │").style(Util.PL_STYLE));
-        logger.info(Component.text("│          ____        __   _    /___/_                      │").style(Util.PL_STYLE));
-        logger.info(Component.text("│         / __ \\ ___  / /_ (_)__ _   (_)___ ___  ____        │").style(Util.PL_STYLE));
-        logger.info(Component.text("│        / /_/ // _ \\/ __// //  ' \\ / //_ // -_)/ __/        │").style(Util.PL_STYLE));
-        logger.info(Component.text("│        \\____// .__/\\__//_//_/_/_//_/ /__/\\__//_/           │").style(Util.PL_STYLE));
-        logger.info(Component.text("│             /_/         by xGinko                          │").style(Util.PL_STYLE));
-        logger.info(Component.text("│                                                            │").style(Util.PL_STYLE));
-        logger.info(Component.text("│                                                            │").style(Util.PL_STYLE));
-        logger.info(Component.text("│        ")
-                .style(Util.PL_STYLE).append(Component.text("https://github.com/xGinko/VillagerOptimizer")
-                .color(NamedTextColor.GRAY)).append(Component.text("         │").style(Util.PL_STYLE)));
-        logger.info(Component.text("│                                                            │").style(Util.PL_STYLE));
-        logger.info(Component.text("│                                                            │").style(Util.PL_STYLE));
-        Permissions.registerAll();
-
-        logger.info(Component.text("│              ")
-                .style(Util.PL_STYLE).append(Component.text(" ➤  Loading Config...").style(Util.PL_STYLE))
-                .append(Component.text("                         │").style(Util.PL_STYLE)));
+        logger.info("Loading config...");
         reloadConfiguration();
-
-        logger.info(Component.text("│              ")
-                .style(Util.PL_STYLE).append(Component.text(" ➤  Loading Translations...").style(Util.PL_STYLE))
-                .append(Component.text("                   │").style(Util.PL_STYLE)));
+        logger.info("Loading translations...");
         reloadLang(true);
-
-        logger.info(Component.text("│              ")
-                .style(Util.PL_STYLE).append(Component.text(" ✓  Done.").color(NamedTextColor.WHITE).decorate(TextDecoration.BOLD))
-                .append(Component.text("                                     │").style(Util.PL_STYLE)));
-        logger.info(Component.text("│                                                            │").style(Util.PL_STYLE));
-        logger.info(Component.text("│                                                            │").style(Util.PL_STYLE));
-        logger.info(Component.text("╰────────────────────────────────────────────────────────────╯").style(Util.PL_STYLE));
+        Permissions.registerAll();
+        logger.info("VillagerOptimizer by xGinko enabled successfully !");
     }
 
     @Override
