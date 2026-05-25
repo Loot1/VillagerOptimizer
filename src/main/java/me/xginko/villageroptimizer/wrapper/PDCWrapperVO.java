@@ -67,11 +67,8 @@ public final class PDCWrapperVO extends PDCWrapper {
      * @return The system time in millis when the villager was last optimized, 0L if the villager was never optimized.
      */
     private long getLastOptimize() {
-        if (dataContainer.has(Keyring.VillagerOptimizer.LAST_OPTIMIZE_SYSTIME_MILLIS.getKey(), PersistentDataType.LONG)) {
-            Long value = dataContainer.get(Keyring.VillagerOptimizer.LAST_OPTIMIZE_SYSTIME_MILLIS.getKey(), PersistentDataType.LONG);
-            return value != null ? value : 0L;
-        }
-        return 0L;
+        Long value = dataContainer.get(Keyring.VillagerOptimizer.LAST_OPTIMIZE_SYSTIME_MILLIS.getKey(), PersistentDataType.LONG);
+        return value != null ? value : 0L;
     }
 
     @Override
@@ -84,11 +81,8 @@ public final class PDCWrapperVO extends PDCWrapper {
 
     @Override
     public long getLastRestockFullTime() {
-        if (dataContainer.has(Keyring.VillagerOptimizer.LAST_RESTOCK_WORLD_FULLTIME.getKey(), PersistentDataType.LONG)) {
-            Long value = dataContainer.get(Keyring.VillagerOptimizer.LAST_RESTOCK_WORLD_FULLTIME.getKey(), PersistentDataType.LONG);
-            return value != null ? value : 0L;
-        }
-        return 0L;
+        Long value = dataContainer.get(Keyring.VillagerOptimizer.LAST_RESTOCK_WORLD_FULLTIME.getKey(), PersistentDataType.LONG);
+        return value != null ? value : 0L;
     }
 
     @Override
@@ -110,18 +104,15 @@ public final class PDCWrapperVO extends PDCWrapper {
      * @return The systime in millis when the entity was last leveled up.
      */
     private long getLastLevelUpTime() {
-        if (dataContainer.has(Keyring.VillagerOptimizer.LAST_LEVELUP_SYSTIME_MILLIS.getKey(), PersistentDataType.LONG)) {
-            Long value = dataContainer.get(Keyring.VillagerOptimizer.LAST_LEVELUP_SYSTIME_MILLIS.getKey(), PersistentDataType.LONG);
-            return value != null ? value : 0L;
-        }
-        return 0L;
+        Long value = dataContainer.get(Keyring.VillagerOptimizer.LAST_LEVELUP_SYSTIME_MILLIS.getKey(), PersistentDataType.LONG);
+        return value != null ? value : 0L;
     }
 
     @Override
     public long getLevelCooldownMillis(long cooldown_millis) {
-        if (dataContainer.has(Keyring.VillagerOptimizer.LAST_LEVELUP_SYSTIME_MILLIS.getKey(), PersistentDataType.LONG)) {
-            Long value = dataContainer.get(Keyring.VillagerOptimizer.LAST_LEVELUP_SYSTIME_MILLIS.getKey(), PersistentDataType.LONG);
-            if (value != null) return System.currentTimeMillis() - (value + cooldown_millis);
+        long lastLevelUp = getLastLevelUpTime();
+        if (lastLevelUp > 0L) {
+            return lastLevelUp + cooldown_millis - System.currentTimeMillis();
         }
         return cooldown_millis;
     }

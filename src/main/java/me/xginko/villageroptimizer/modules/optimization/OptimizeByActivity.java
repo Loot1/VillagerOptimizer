@@ -22,10 +22,10 @@ import org.bukkit.event.entity.EntityInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -53,8 +53,8 @@ public class OptimizeByActivity extends VillagerOptimizerModule implements Liste
     public OptimizeByActivity() {
         super("optimization-methods.regional-activity");
         config.master().addComment(configPath + ".enable",
-                "Enable optimization by naming villagers to one of the names configured below.\n" +
-                "Nametag optimized villagers will be unoptimized again when they are renamed to something else.");
+                "When enabled, villagers in a region will be automatically optimized if the number of\n" +
+                "pathfind or entity-interact events exceeds the configured limits within the data keep time.");
 
         this.checkRadius = config.getDouble(configPath + ".check-radius-blocks", 500.0,
                 "The radius in blocks in which activity will be grouped together and measured.");
@@ -121,7 +121,7 @@ public class OptimizeByActivity extends VillagerOptimizerModule implements Liste
         regionData.regionBusy.set(true);
 
         AtomicInteger optimizeCount = new AtomicInteger();
-        Set<Player> playersWithinArea = new CopyOnWriteArraySet<>();
+        Set<Player> playersWithinArea = new HashSet<>();
 
         region2D.getEntities()
                 .thenAccept(entities -> {
@@ -165,7 +165,7 @@ public class OptimizeByActivity extends VillagerOptimizerModule implements Liste
                         info(   "Optimized " + optimizeCount.get() + " villagers in a radius of " + checkRadius +
                                 " blocks from center at x=" + regionData.region.getCenterX() + ", z=" + regionData.region.getCenterZ() +
                                 " in world " + location.getWorld().getName() +
-                                "because of too high pathfinding activity within the configured timeframe: " +
+                                " because of too high pathfinding activity within the configured timeframe: " +
                                 regionData.pathfindCount + " (limit: " + pathfindLimit + ")");
                     }
 
@@ -188,7 +188,7 @@ public class OptimizeByActivity extends VillagerOptimizerModule implements Liste
         regionData.regionBusy.set(true);
 
         AtomicInteger optimizeCount = new AtomicInteger();
-        Set<Player> playersWithinArea = new CopyOnWriteArraySet<>();
+        Set<Player> playersWithinArea = new HashSet<>();
 
         region2D.getEntities()
                 .thenAccept(entities -> {
@@ -232,8 +232,8 @@ public class OptimizeByActivity extends VillagerOptimizerModule implements Liste
                         info(   "Optimized " + optimizeCount.get() + " villagers in a radius of " + checkRadius +
                                 " blocks from center at x=" + regionData.region.getCenterX() + ", z=" + regionData.region.getCenterZ() +
                                 " in world " + location.getWorld().getName() +
-                                "because of too many villagers interacting with objects within the configured timeframe: " +
-                                regionData.pathfindCount + " (limit: " + pathfindLimit + ")");
+                                " because of too many villagers interacting with objects within the configured timeframe: " +
+                                regionData.entityInteractCount + " (limit: " + entityInteractLimit + ")");
                     }
 
                     regionDataCache.invalidate(region2D);

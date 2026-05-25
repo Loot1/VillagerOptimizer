@@ -27,7 +27,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import java.time.Duration;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -49,20 +48,17 @@ public class OptimizeByBlock extends VillagerOptimizerModule implements Listener
                 .filter(XMaterial::isSupported)
                 .map(Enum::name)
                 .collect(Collectors.toList());
-        this.blocks_that_disable = config.getList(configPath + ".materials", defaults,
-                        "Values here need to be valid bukkit Material enums for your server version.")
-                .stream()
-                .map(configuredMaterial -> {
-                    try {
-                        return Material.valueOf(configuredMaterial);
-                    } catch (IllegalArgumentException e) {
-                        warn("Material '" + configuredMaterial + "' not recognized. Please use correct Material enums from: " +
-                             "https://jd.papermc.io/paper/1.20/org/bukkit/Material.html");
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toCollection(() -> EnumSet.noneOf(Material.class)));
+        EnumSet<Material> blockSet = EnumSet.noneOf(Material.class);
+        for (String configuredMaterial : config.getList(configPath + ".materials", defaults,
+                "Values here need to be valid bukkit Material enums for your server version.")) {
+            try {
+                blockSet.add(Material.valueOf(configuredMaterial));
+            } catch (IllegalArgumentException e) {
+                warn("Material '" + configuredMaterial + "' not recognized. Please use correct Material enums from: " +
+                     "https://jd.papermc.io/paper/1.20/org/bukkit/Material.html");
+            }
+        }
+        this.blocks_that_disable = blockSet;
         this.cooldown_millis = TimeUnit.SECONDS.toMillis(
                 config.getInt(configPath + ".optimize-cooldown-seconds", 600,
                 "Cooldown in seconds until a villager can be optimized again by using specific blocks.\n" +
@@ -101,7 +97,7 @@ public class OptimizeByBlock extends VillagerOptimizerModule implements Listener
         if (only_while_sneaking && !player.isSneaking()) return;
 
         final Location blockLoc = placed.getLocation().toCenterLocation();
-        WrappedVillager closestOptimizableVillager = null;
+        WrappedVillager closestVillager = null;
         double closestDistance = Double.MAX_VALUE;
 
         for (Villager villager : blockLoc.getNearbyEntitiesByType(Villager.class, search_radius)) {
@@ -113,30 +109,29 @@ public class OptimizeByBlock extends VillagerOptimizerModule implements Listener
 
             final WrappedVillager wVillager = wrapperCache.get(villager, WrappedVillager::new);
             if (wVillager == null) continue;
-            if (wVillager.canOptimize(cooldown_millis)) {
-                closestOptimizableVillager = wVillager;
-                closestDistance = distance;
-            }
+
+            closestVillager = wVillager;
+            closestDistance = distance;
         }
 
-        if (closestOptimizableVillager == null) return;
+        if (closestVillager == null) return;
 
-        if (closestOptimizableVillager.canOptimize(cooldown_millis) || player.hasPermission(Permissions.Bypass.BLOCK_COOLDOWN.get())) {
+        if (closestVillager.canOptimize(cooldown_millis) || player.hasPermission(Permissions.Bypass.BLOCK_COOLDOWN.get())) {
             VillagerOptimizeEvent optimizeEvent = new VillagerOptimizeEvent(
-                    closestOptimizableVillager,
+                    closestVillager,
                     OptimizationType.BLOCK,
                     player,
                     event.isAsynchronous()
             );
 
             if (!optimizeEvent.callEvent()) return;
-            closestOptimizableVillager.setOptimizationType(optimizeEvent.getOptimizationType());
-            closestOptimizableVillager.saveOptimizeTime();
+            closestVillager.setOptimizationType(optimizeEvent.getOptimizationType());
+            closestVillager.saveOptimizeTime();
 
             if (notify_player) {
                 final TextReplacementConfig vilProfession = TextReplacementConfig.builder()
                         .matchLiteral("%vil_profession%")
-                        .replacement(Util.toNiceString(closestOptimizableVillager.villager.getProfession()))
+                        .replacement(Util.toNiceString(closestVillager.villager.getProfession()))
                         .build();
                 final TextReplacementConfig placedMaterial = TextReplacementConfig.builder()
                         .matchLiteral("%blocktype%")
@@ -148,14 +143,14 @@ public class OptimizeByBlock extends VillagerOptimizerModule implements Listener
 
             if (log_enabled) {
                 info(player.getName() + " optimized villager at " +
-                        LocationUtil.toString(closestOptimizableVillager.villager.getLocation()));
+                        LocationUtil.toString(closestVillager.villager.getLocation()));
             }
         } else {
-            closestOptimizableVillager.sayNo();
+            closestVillager.sayNo();
             if (notify_player) {
                 final TextReplacementConfig timeLeft = TextReplacementConfig.builder()
                         .matchLiteral("%time%")
-                        .replacement(Util.formatDuration(Duration.ofMillis(closestOptimizableVillager.getOptimizeCooldownMillis(cooldown_millis))))
+                        .replacement(Util.formatDuration(Duration.ofMillis(closestVillager.getOptimizeCooldownMillis(cooldown_millis))))
                         .build();
                 VillagerOptimizer.getLang(player.locale()).block_on_optimize_cooldown
                         .forEach(line -> KyoriUtil.sendMessage(player, line.replaceText(timeLeft)));

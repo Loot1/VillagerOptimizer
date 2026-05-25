@@ -3,22 +3,34 @@ package me.xginko.villageroptimizer.modules;
 import com.github.benmanes.caffeine.cache.Cache;
 import me.xginko.villageroptimizer.VillagerOptimizer;
 import me.xginko.villageroptimizer.config.Config;
+import me.xginko.villageroptimizer.modules.gameplay.EnableLeashingVillagers;
+import me.xginko.villageroptimizer.modules.gameplay.FixOptimisationAfterCure;
+import me.xginko.villageroptimizer.modules.gameplay.LevelOptimizedProfession;
+import me.xginko.villageroptimizer.modules.gameplay.MakeVillagersSpawnAdult;
+import me.xginko.villageroptimizer.modules.gameplay.PreventOptimizedDamage;
+import me.xginko.villageroptimizer.modules.gameplay.PreventOptimizedTargeting;
+import me.xginko.villageroptimizer.modules.gameplay.PreventUnoptimizedTrading;
+import me.xginko.villageroptimizer.modules.gameplay.RestockOptimizedTrades;
+import me.xginko.villageroptimizer.modules.gameplay.UnoptimizeOnJobLoose;
+import me.xginko.villageroptimizer.modules.gameplay.VisuallyHighlightOptimized;
+import me.xginko.villageroptimizer.modules.optimization.OptimizeByActivity;
+import me.xginko.villageroptimizer.modules.optimization.OptimizeByBlock;
+import me.xginko.villageroptimizer.modules.optimization.OptimizeByNametag;
+import me.xginko.villageroptimizer.modules.optimization.OptimizeByWorkstation;
 import me.xginko.villageroptimizer.struct.Disableable;
 import me.xginko.villageroptimizer.struct.Enableable;
 import me.xginko.villageroptimizer.wrapper.WrappedVillager;
 import org.bukkit.entity.Villager;
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanners;
 import space.arim.morepaperlib.scheduling.GracefulScheduling;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public abstract class VillagerOptimizerModule implements Enableable, Disableable {
 
-    private static final Reflections MODULES_PACKAGE = new Reflections(VillagerOptimizerModule.class.getPackage().getName());
     public static final Set<VillagerOptimizerModule> ENABLED_MODULES = new HashSet<>();
 
     public abstract boolean shouldEnable();
@@ -49,16 +61,35 @@ public abstract class VillagerOptimizerModule implements Enableable, Disableable
         ENABLED_MODULES.forEach(VillagerOptimizerModule::disable);
         ENABLED_MODULES.clear();
 
-        for (Class<?> clazz : MODULES_PACKAGE.get(Scanners.SubTypes.of(VillagerOptimizerModule.class).asClass())) {
-            if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) continue;
+        List<Supplier<VillagerOptimizerModule>> factories = Arrays.asList(
+                // optimization methods
+                OptimizeByActivity::new,
+                OptimizeByBlock::new,
+                OptimizeByNametag::new,
+                OptimizeByWorkstation::new,
+                // gameplay
+                EnableLeashingVillagers::new,
+                FixOptimisationAfterCure::new,
+                LevelOptimizedProfession::new,
+                MakeVillagersSpawnAdult::new,
+                PreventOptimizedDamage::new,
+                PreventOptimizedTargeting::new,
+                PreventUnoptimizedTrading::new,
+                RestockOptimizedTrades::new,
+                UnoptimizeOnJobLoose::new,
+                VisuallyHighlightOptimized::new,
+                // chunk limit
+                VillagerChunkLimit::new
+        );
 
+        for (Supplier<VillagerOptimizerModule> factory : factories) {
             try {
-                VillagerOptimizerModule module = (VillagerOptimizerModule) clazz.getDeclaredConstructor().newInstance();
+                VillagerOptimizerModule module = factory.get();
                 if (module.shouldEnable()) {
                     ENABLED_MODULES.add(module);
                 }
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                VillagerOptimizer.logger().error("Failed initialising module class '{}'.", clazz.getSimpleName(), e);
+            } catch (Exception e) {
+                VillagerOptimizer.logger().error("Failed initialising a module.", e);
             }
         }
 

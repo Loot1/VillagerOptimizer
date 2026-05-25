@@ -41,7 +41,7 @@ public class Util {
     }
 
     public static @Nullable Villager.Profession getWorkstationProfession(@NotNull Material workstation) {
-        return PROFESSION_MAP.getOrDefault(workstation, null);
+        return PROFESSION_MAP.get(workstation);
     }
 
     /**

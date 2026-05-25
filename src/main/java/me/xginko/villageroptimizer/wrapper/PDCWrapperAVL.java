@@ -92,8 +92,9 @@ public final class PDCWrapperAVL extends PDCWrapper {
 
     @Override
     public long getOptimizeCooldownMillis(long cooldown_millis) {
-        if (dataContainer.has(Keyring.AntiVillagerLag.NEXT_OPTIMIZATION_SYSTIME_SECONDS.getKey(), PersistentDataType.LONG)) {
-            return TimeUnit.SECONDS.toMillis(dataContainer.get(Keyring.AntiVillagerLag.NEXT_OPTIMIZATION_SYSTIME_SECONDS.getKey(), PersistentDataType.LONG) - System.currentTimeMillis());
+        Long nextOptSeconds = dataContainer.get(Keyring.AntiVillagerLag.NEXT_OPTIMIZATION_SYSTIME_SECONDS.getKey(), PersistentDataType.LONG);
+        if (nextOptSeconds != null) {
+            return TimeUnit.SECONDS.toMillis(nextOptSeconds) - System.currentTimeMillis();
         }
         return cooldown_millis;
     }
@@ -124,8 +125,10 @@ public final class PDCWrapperAVL extends PDCWrapper {
 
     @Override
     public long getLevelCooldownMillis(long cooldown_millis) {
-        if (dataContainer.has(Keyring.AntiVillagerLag.NEXT_LEVELUP_SYSTIME_SECONDS.getKey(), PersistentDataType.LONG))
-            return System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(dataContainer.get(Keyring.AntiVillagerLag.NEXT_LEVELUP_SYSTIME_SECONDS.getKey(), PersistentDataType.LONG));
+        Long nextLevelSeconds = dataContainer.get(Keyring.AntiVillagerLag.NEXT_LEVELUP_SYSTIME_SECONDS.getKey(), PersistentDataType.LONG);
+        if (nextLevelSeconds != null) {
+            return TimeUnit.SECONDS.toMillis(nextLevelSeconds) - System.currentTimeMillis();
+        }
         return cooldown_millis;
     }
 }

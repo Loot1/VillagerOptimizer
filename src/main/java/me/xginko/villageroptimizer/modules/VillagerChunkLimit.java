@@ -126,11 +126,10 @@ public class VillagerChunkLimit extends VillagerOptimizerModule implements Runna
     public void run() {
         for (World world : plugin.getServer().getWorlds()) {
             for (Chunk chunk : world.getLoadedChunks()) {
-                scheduling.regionSpecificScheduler(chunk.getWorld(), chunk.getX(), chunk.getZ()).run(() -> {
-                    if (!skip_unloaded_chunks || Util.isChunkLoaded(chunk)) {
-                        manageVillagerCount(chunk);
-                    }
-                });
+                if (checked_chunks.contains(chunk)) continue;
+                if (skip_unloaded_chunks && !Util.isChunkLoaded(chunk)) continue;
+                scheduling.regionSpecificScheduler(chunk.getWorld(), chunk.getX(), chunk.getZ()).run(() ->
+                        manageVillagerCount(chunk));
             }
         }
     }

@@ -17,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import space.arim.morepaperlib.MorePaperLib;
 import space.arim.morepaperlib.commands.CommandRegistration;
 import space.arim.morepaperlib.scheduling.GracefulScheduling;
@@ -131,7 +132,7 @@ public final class VillagerOptimizer extends JavaPlugin {
         return commandRegistration;
     }
 
-    public static @NotNull Cache<Villager, WrappedVillager> wrappers() {
+    public static @Nullable Cache<Villager, WrappedVillager> wrappers() {
         return wrapperCache;
     }
 
