@@ -8,6 +8,7 @@ import me.xginko.villageroptimizer.utils.KyoriUtil;
 import me.xginko.villageroptimizer.utils.Util;
 import me.xginko.villageroptimizer.wrapper.WrappedVillager;
 import net.kyori.adventure.text.TextReplacementConfig;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -85,13 +86,14 @@ public class LevelOptimizedProfession extends VillagerOptimizerModule implements
                 }, null);
             } else {
                 if (notify_player) {
-                    Player player = (Player) event.getPlayer();
-                    final TextReplacementConfig timeLeft = TextReplacementConfig.builder()
-                            .matchLiteral("%time%")
-                            .replacement(Util.formatDuration(Duration.ofMillis(wVillager.getLevelCooldownMillis(cooldown_millis))))
-                            .build();
-                    VillagerOptimizer.getLang(player.locale()).villager_leveling_up
-                            .forEach(line -> KyoriUtil.sendMessage(player, line.replaceText(timeLeft)));
+                    if(event.getPlayer() instanceof Player player) {
+                        final TextReplacementConfig timeLeft = TextReplacementConfig.builder()
+                                .matchLiteral("%time%")
+                                .replacement(Util.formatDuration(Duration.ofMillis(wVillager.getLevelCooldownMillis(cooldown_millis))))
+                                .build();
+                        VillagerOptimizer.getLang(player.locale()).villager_leveling_up
+                                .forEach(line -> KyoriUtil.sendMessage(player, line.replaceText(timeLeft)));
+                    }
                 }
             }
         }

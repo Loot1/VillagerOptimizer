@@ -31,6 +31,11 @@ public final class PDCWrapperVO extends PDCWrapper {
     @Override
     public void setOptimizationType(OptimizationType type) {
         VillagerOptimizer.scheduling().entitySpecificScheduler(villager).runAtFixedRate(setOptimization -> {
+            // Cancel immediately if the entity is no longer valid (dead, removed, etc.)
+            if (!villager.isValid()) {
+                setOptimization.cancel();
+                return;
+            }
             // Keep repeating task until villager is no longer trading with a player
             if (villager.isTrading()) return;
 

@@ -16,9 +16,12 @@ public class WrappedVillager extends PDCWrapper {
 
     private final @NotNull PDCWrapper[] pdcWrappers;
 
+    private final @NotNull PDCWrapper primaryWrapper;
+
     public WrappedVillager(@NotNull Villager villager) {
         super(villager);
         this.pdcWrappers = PDCWrapper.forVillager(villager);
+        this.primaryWrapper = pdcWrappers[0];
     }
 
     /**
@@ -91,26 +94,25 @@ public class WrappedVillager extends PDCWrapper {
 
     @Override
     public boolean isOptimized() {
+        if (pdcWrappers.length == 1) return primaryWrapper.isOptimized();
         for (PDCWrapper pdcWrapper : pdcWrappers) {
-            if (pdcWrapper.isOptimized()) {
-                return true;
-            }
+            if (pdcWrapper.isOptimized()) return true;
         }
         return false;
     }
 
     @Override
     public boolean canOptimize(long cooldown_millis) {
+        if (pdcWrappers.length == 1) return primaryWrapper.canOptimize(cooldown_millis);
         for (PDCWrapper pdcWrapper : pdcWrappers) {
-            if (!pdcWrapper.canOptimize(cooldown_millis)) {
-                return false;
-            }
+            if (!pdcWrapper.canOptimize(cooldown_millis)) return false;
         }
         return true;
     }
 
     @Override
     public void setOptimizationType(OptimizationType type) {
+        if (pdcWrappers.length == 1) { primaryWrapper.setOptimizationType(type); return; }
         for (PDCWrapper pdcWrapper : pdcWrappers) {
             pdcWrapper.setOptimizationType(type);
         }
@@ -118,6 +120,7 @@ public class WrappedVillager extends PDCWrapper {
 
     @Override
     public @NotNull OptimizationType getOptimizationType() {
+        if (pdcWrappers.length == 1) return primaryWrapper.getOptimizationType();
         OptimizationType result = OptimizationType.NONE;
         for (PDCWrapper pdcWrapper : pdcWrappers) {
             OptimizationType type = pdcWrapper.getOptimizationType();
@@ -134,6 +137,7 @@ public class WrappedVillager extends PDCWrapper {
 
     @Override
     public void saveOptimizeTime() {
+        if (pdcWrappers.length == 1) { primaryWrapper.saveOptimizeTime(); return; }
         for (PDCWrapper pdcWrapper : pdcWrappers) {
             pdcWrapper.saveOptimizeTime();
         }
@@ -141,6 +145,7 @@ public class WrappedVillager extends PDCWrapper {
 
     @Override
     public long getOptimizeCooldownMillis(long cooldown_millis) {
+        if (pdcWrappers.length == 1) return primaryWrapper.getOptimizeCooldownMillis(cooldown_millis);
         long cooldown = 0L;
         for (PDCWrapper pdcWrapper : pdcWrappers) {
             cooldown = Math.max(cooldown, pdcWrapper.getOptimizeCooldownMillis(cooldown_millis));
@@ -150,6 +155,7 @@ public class WrappedVillager extends PDCWrapper {
 
     @Override
     public long getLastRestockFullTime() {
+        if (pdcWrappers.length == 1) return primaryWrapper.getLastRestockFullTime();
         long cooldown = 0L;
         for (PDCWrapper pdcWrapper : pdcWrappers) {
             cooldown = Math.max(cooldown, pdcWrapper.getLastRestockFullTime());
@@ -159,6 +165,7 @@ public class WrappedVillager extends PDCWrapper {
 
     @Override
     public void saveRestockTime() {
+        if (pdcWrappers.length == 1) { primaryWrapper.saveRestockTime(); return; }
         for (PDCWrapper pdcWrapper : pdcWrappers) {
             pdcWrapper.saveRestockTime();
         }
@@ -166,16 +173,16 @@ public class WrappedVillager extends PDCWrapper {
 
     @Override
     public boolean canLevelUp(long cooldown_millis) {
+        if (pdcWrappers.length == 1) return primaryWrapper.canLevelUp(cooldown_millis);
         for (PDCWrapper pdcWrapper : pdcWrappers) {
-            if (!pdcWrapper.canLevelUp(cooldown_millis)) {
-                return false;
-            }
+            if (!pdcWrapper.canLevelUp(cooldown_millis)) return false;
         }
         return true;
     }
 
     @Override
     public void saveLastLevelUp() {
+        if (pdcWrappers.length == 1) { primaryWrapper.saveLastLevelUp(); return; }
         for (PDCWrapper pdcWrapper : pdcWrappers) {
             pdcWrapper.saveLastLevelUp();
         }
@@ -183,6 +190,7 @@ public class WrappedVillager extends PDCWrapper {
 
     @Override
     public long getLevelCooldownMillis(long cooldown_millis) {
+        if (pdcWrappers.length == 1) return primaryWrapper.getLevelCooldownMillis(cooldown_millis);
         long cooldown = cooldown_millis;
         for (PDCWrapper pdcWrapper : pdcWrappers) {
             cooldown = Math.max(cooldown, pdcWrapper.getLevelCooldownMillis(cooldown_millis));

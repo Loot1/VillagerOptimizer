@@ -109,7 +109,7 @@ public class OptimizeByWorkstation extends VillagerOptimizerModule implements Li
                                     .matchLiteral("%time%")
                                     .replacement(Util.formatDuration(Duration.ofMillis(wrapped.getOptimizeCooldownMillis(cooldown_millis))))
                                     .build();
-                            VillagerOptimizer.getLang(player.locale()).nametag_on_optimize_cooldown
+                            VillagerOptimizer.getLang(player.locale()).workstation_on_optimize_cooldown
                                     .forEach(line -> KyoriUtil.sendMessage(player, line.replaceText(timeLeft)));
                         }
 

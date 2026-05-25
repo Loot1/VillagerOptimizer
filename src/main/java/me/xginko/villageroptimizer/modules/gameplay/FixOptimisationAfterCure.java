@@ -14,7 +14,10 @@ import org.bukkit.event.entity.EntityTransformEvent;
 public class FixOptimisationAfterCure extends VillagerOptimizerModule implements Listener {
 
     public FixOptimisationAfterCure() {
-        super("post-cure-optimization-fix");
+        super("gameplay.fix-optimisation-after-cure");
+        config.master().addComment(configPath + ".enable",
+                "Re-applies the optimization state of a villager after it has been cured from a zombie villager,\n" +
+                "since the curing process resets entity AI flags.");
     }
 
     @Override
@@ -29,7 +32,7 @@ public class FixOptimisationAfterCure extends VillagerOptimizerModule implements
 
     @Override
     public boolean shouldEnable() {
-        return true;
+        return config.getBoolean(configPath + ".enable", true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

@@ -69,6 +69,7 @@ public class Config {
         this.config.addDefault("gameplay.rename-optimized-villagers.enable", false);
         this.config.addDefault("gameplay.prevent-entities-from-targeting-optimized.enable", true);
         this.config.addDefault("gameplay.prevent-damage-to-optimized.enable", true);
+        this.config.addDefault("gameplay.fix-optimisation-after-cure.enable", true);
     }
 
     public void createTitledSection(@NotNull String title, @NotNull String path) {

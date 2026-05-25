@@ -22,10 +22,8 @@ import org.bukkit.event.entity.EntityInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -88,155 +86,90 @@ public class OptimizeByActivity extends VillagerOptimizerModule implements Liste
         return config.getBoolean(configPath + ".enable", false);
     }
 
-    private @NotNull RegionData getRegionData(Location location) {
-        return Objects.requireNonNull(regionDataCache.get(getRegion(location), RegionData::new));
-    }
-
-    private @NotNull BlockRegion2D getRegion(Location location) {
-        // Find and return region containing this location
-        for (Map.Entry<BlockRegion2D, RegionData> regionDataEntry : regionDataCache.asMap().entrySet()) {
-            if (regionDataEntry.getKey().contains(location)) {
-                return regionDataEntry.getKey();
+    private @NotNull RegionData getOrCreateRegionData(@NotNull Location location) {
+        for (RegionData data : regionDataCache.asMap().values()) {
+            if (data.region.contains(location)) {
+                return data;
             }
         }
-
-        // Create and cache region if none exists
         BlockRegion2D region = BlockRegion2D.of(location.getWorld(), location.getX(), location.getZ(), checkRadius);
-        regionDataCache.put(region, new RegionData(region));
-        return region;
+        RegionData data = new RegionData(region);
+        regionDataCache.put(region, data);
+        return data;
+    }
+
+    private void triggerRegionOptimization(@NotNull RegionData regionData, @NotNull String logReason,
+                                           int activityCount, int limit) {
+        regionData.region.getEntities().thenAccept(entities -> {
+            // Running on the region scheduler thread (see BlockRegion2D.getEntities())
+            int optimizedCount = 0;
+            List<Player> playersToNotify = notifyPlayers ? new ArrayList<>() : null;
+
+            for (Entity entity : entities) {
+                if (entity.getType() == XEntityType.VILLAGER.get()) {
+                    WrappedVillager wrappedVillager = wrapperCache.get((Villager) entity, WrappedVillager::new);
+                    if (wrappedVillager != null && !wrappedVillager.isOptimized()) {
+                        // setOptimizationType dispatches internally to the entity scheduler
+                        wrappedVillager.setOptimizationType(OptimizationType.REGIONAL_ACTIVITY);
+                        optimizedCount++;
+                    }
+                } else if (playersToNotify != null && entity.getType() == XEntityType.PLAYER.get()) {
+                    playersToNotify.add((Player) entity);
+                }
+            }
+
+            if (playersToNotify != null && !playersToNotify.isEmpty()) {
+                final TextReplacementConfig amount = TextReplacementConfig.builder()
+                        .matchLiteral("%amount%")
+                        .replacement(String.valueOf(optimizedCount))
+                        .build();
+                for (Player player : playersToNotify) {
+                    scheduling.entitySpecificScheduler(player).run(() ->
+                            VillagerOptimizer.getLang(player.locale()).activity_optimize_success
+                                    .forEach(line -> player.sendMessage(line.replaceText(amount))),
+                            null);
+                }
+            }
+
+            if (doLogging) {
+                info("Optimized " + optimizedCount + " villagers in a radius of " + checkRadius +
+                        " blocks from center at x=" + regionData.region.getCenterX() +
+                        ", z=" + regionData.region.getCenterZ() +
+                        " because of " + logReason + ": " + activityCount + " (limit: " + limit + ")");
+            }
+
+            regionDataCache.invalidate(regionData.region);
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void onEntityPathfind(EntityPathfindEvent event) {
         if (event.getEntityType() != XEntityType.VILLAGER.get()) return;
 
-        Location location = event.getEntity().getLocation();
-        BlockRegion2D region2D = getRegion(location);
-        RegionData regionData = getRegionData(location);
+        RegionData regionData = getOrCreateRegionData(event.getEntity().getLocation());
+        if (regionData.regionBusy.get()) return;
 
-        if (regionData.regionBusy.get() || regionData.pathfindCount.incrementAndGet() <= pathfindLimit) {
-            return;
-        }
+        int count = regionData.pathfindCount.incrementAndGet();
+        if (count <= pathfindLimit) return;
 
-        regionData.regionBusy.set(true);
+        // compareAndSet ensures only one thread triggers the optimization, even under concurrent events
+        if (!regionData.regionBusy.compareAndSet(false, true)) return;
 
-        AtomicInteger optimizeCount = new AtomicInteger();
-        Set<Player> playersWithinArea = new HashSet<>();
-
-        region2D.getEntities()
-                .thenAccept(entities -> {
-                    for (Entity entity : entities) {
-                        scheduling.entitySpecificScheduler(entity).run(() -> {
-                            if (entity.getType() == XEntityType.VILLAGER.get()) {
-                                WrappedVillager wrappedVillager = wrapperCache.get((Villager) entity, WrappedVillager::new);
-
-                                if (wrappedVillager == null || wrappedVillager.isOptimized()) {
-                                    return;
-                                }
-
-                                wrappedVillager.setOptimizationType(OptimizationType.REGIONAL_ACTIVITY);
-                                optimizeCount.incrementAndGet();
-                            }
-
-                            if (notifyPlayers && entity.getType() == XEntityType.PLAYER.get()) {
-                                playersWithinArea.add((Player) entity);
-                            }
-                        }, null);
-                    }
-                })
-                .thenRun(() -> {
-                    if (notifyPlayers) {
-                        TextReplacementConfig amount = TextReplacementConfig.builder()
-                                .matchLiteral("%amount%")
-                                .replacement(optimizeCount.toString())
-                                .build();
-
-                        for (Player player : playersWithinArea) {
-                            VillagerOptimizer.scheduling().entitySpecificScheduler(player).run(() ->
-                                            VillagerOptimizer.getLang(player.locale()).activity_optimize_success
-                                                    .forEach(line -> player.sendMessage(line.replaceText(amount))),
-                                    null);
-                        }
-
-                        playersWithinArea.clear();
-                    }
-
-                    if (doLogging) {
-                        info(   "Optimized " + optimizeCount.get() + " villagers in a radius of " + checkRadius +
-                                " blocks from center at x=" + regionData.region.getCenterX() + ", z=" + regionData.region.getCenterZ() +
-                                " in world " + location.getWorld().getName() +
-                                " because of too high pathfinding activity within the configured timeframe: " +
-                                regionData.pathfindCount + " (limit: " + pathfindLimit + ")");
-                    }
-
-                    regionDataCache.invalidate(region2D);
-                });
+        triggerRegionOptimization(regionData, "pathfinding activity", count, pathfindLimit);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void onEntityInteract(EntityInteractEvent event) {
         if (event.getEntityType() != XEntityType.VILLAGER.get()) return;
 
-        Location location = event.getEntity().getLocation();
-        BlockRegion2D region2D = getRegion(location);
-        RegionData regionData = getRegionData(location);
+        RegionData regionData = getOrCreateRegionData(event.getEntity().getLocation());
+        if (regionData.regionBusy.get()) return;
 
-        if (regionData.regionBusy.get() || regionData.entityInteractCount.incrementAndGet() <= entityInteractLimit) {
-            return;
-        }
+        int count = regionData.entityInteractCount.incrementAndGet();
+        if (count <= entityInteractLimit) return;
 
-        regionData.regionBusy.set(true);
+        if (!regionData.regionBusy.compareAndSet(false, true)) return;
 
-        AtomicInteger optimizeCount = new AtomicInteger();
-        Set<Player> playersWithinArea = new HashSet<>();
-
-        region2D.getEntities()
-                .thenAccept(entities -> {
-                    for (Entity entity : entities) {
-                        scheduling.entitySpecificScheduler(entity).run(() -> {
-                            if (entity.getType() == XEntityType.VILLAGER.get()) {
-                                WrappedVillager wrappedVillager = wrapperCache.get((Villager) entity, WrappedVillager::new);
-
-                                if (wrappedVillager == null || wrappedVillager.isOptimized()) {
-                                    return;
-                                }
-
-                                wrappedVillager.setOptimizationType(OptimizationType.REGIONAL_ACTIVITY);
-                                optimizeCount.incrementAndGet();
-                            }
-
-                            if (notifyPlayers && entity.getType() == XEntityType.PLAYER.get()) {
-                                playersWithinArea.add((Player) entity);
-                            }
-                        }, null);
-                    }
-                })
-                .thenRun(() -> {
-                    if (notifyPlayers) {
-                        TextReplacementConfig amount = TextReplacementConfig.builder()
-                                .matchLiteral("%amount%")
-                                .replacement(optimizeCount.toString())
-                                .build();
-
-                        for (Player player : playersWithinArea) {
-                            VillagerOptimizer.scheduling().entitySpecificScheduler(player).run(() ->
-                                            VillagerOptimizer.getLang(player.locale()).activity_optimize_success
-                                                    .forEach(line -> player.sendMessage(line.replaceText(amount))),
-                                    null);
-                        }
-
-                        playersWithinArea.clear();
-                    }
-
-                    if (doLogging) {
-                        info(   "Optimized " + optimizeCount.get() + " villagers in a radius of " + checkRadius +
-                                " blocks from center at x=" + regionData.region.getCenterX() + ", z=" + regionData.region.getCenterZ() +
-                                " in world " + location.getWorld().getName() +
-                                " because of too many villagers interacting with objects within the configured timeframe: " +
-                                regionData.entityInteractCount + " (limit: " + entityInteractLimit + ")");
-                    }
-
-                    regionDataCache.invalidate(region2D);
-                });
+        triggerRegionOptimization(regionData, "entity-interact events", count, entityInteractLimit);
     }
 }

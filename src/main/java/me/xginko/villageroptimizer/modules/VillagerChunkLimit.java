@@ -128,6 +128,7 @@ public class VillagerChunkLimit extends VillagerOptimizerModule implements Runna
             for (Chunk chunk : world.getLoadedChunks()) {
                 if (checked_chunks.contains(chunk)) continue;
                 if (skip_unloaded_chunks && !Util.isChunkLoaded(chunk)) continue;
+                checked_chunks.add(chunk);
                 scheduling.regionSpecificScheduler(chunk.getWorld(), chunk.getX(), chunk.getZ()).run(() ->
                         manageVillagerCount(chunk));
             }
@@ -151,9 +152,9 @@ public class VillagerChunkLimit extends VillagerOptimizerModule implements Runna
     }
 
     private void manageVillagerCount(@NotNull Chunk chunk) {
-        // Remember which chunk we have already checked
-        if (checked_chunks.contains(chunk)) return;
-        else checked_chunks.add(chunk);
+        // returns false if already present
+        //  won't reach here since the chunk was already added before dispatch.
+        if (!checked_chunks.add(chunk)) return;
 
         // Collect all optimized and unoptimized villagers in that chunk
         List<Villager> optimized_villagers = new ArrayList<>();

@@ -51,13 +51,6 @@ public final class VillagerOptimizer extends JavaPlugin {
     private static Metrics bStats;
 
     @Override
-    public void onLoad() {
-        // Disable reflection logging
-        String shadedLibs = getClass().getPackage().getName() + ".libs";
-        Configurator.setLevel(shadedLibs + ".reflections.Reflections", Level.OFF);
-    }
-
-    @Override
     public void onEnable() {
         instance = this;
         MorePaperLib morePaperLib = new MorePaperLib(this);
@@ -158,8 +151,8 @@ public final class VillagerOptimizer extends JavaPlugin {
     }
 
     public void reloadPlugin() {
+        reloadConfiguration(); // config must be reloaded first so reloadLang() reads the updated values
         reloadLang();
-        reloadConfiguration();
     }
 
     private void reloadConfiguration() {
