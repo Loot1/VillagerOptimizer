@@ -91,7 +91,7 @@ public class LanguageCache {
         try {
             this.lang.save();
         } catch (Throwable throwable) {
-            VillagerOptimizer.logger().error("Failed to save language file: " + langYML.getName(), throwable);
+            VillagerOptimizer.logger().error("Failed to save language file: {}", langYML.getName(), throwable);
         }
     }
 
