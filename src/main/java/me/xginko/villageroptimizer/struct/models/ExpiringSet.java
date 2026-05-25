@@ -62,8 +62,9 @@ public final class ExpiringSet<E> extends AbstractSet<E> implements Set<E> {
      *                              (<a href="Collection.html#optional-restrictions">optional</a>)
      */
     @Override
+    @SuppressWarnings("unchecked")
     public boolean contains(Object item) {
-        return this.cache.getIfPresent(item) != null;
+        return this.cache.getIfPresent((E) item) != null;
     }
 
     /**
@@ -206,7 +207,7 @@ public final class ExpiringSet<E> extends AbstractSet<E> implements Set<E> {
     @Override
     public boolean remove(Object o) {
         boolean present = contains(o);
-        this.cache.invalidate(o);
+        this.cache.invalidate((E) o);
         return present;
     }
 
