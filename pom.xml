@@ -33,10 +33,6 @@
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         <repository>
-            <id>sonatype</id>
-            <url>https://oss.sonatype.org/content/groups/public/</url>
-        </repository>
-        <repository>
             <id>morepaperlib-repo</id>
             <url>https://mvn-repo.arim.space/lesser-gpl3/</url>
         </repository>
@@ -47,7 +43,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.4-R0.1-SNAPSHOT</version>
+            <version>1.21.11-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -57,15 +53,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>net.luckperms</groupId>
-            <artifactId>api</artifactId>
-            <version>5.4</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-text-serializer-ansi</artifactId>
-            <version>4.17.0</version>
+            <version>4.26.1</version>
             <scope>provided</scope>
         </dependency>
 
@@ -79,19 +69,19 @@
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>2.9.3</version>
+            <version>3.2.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>space.arim.morepaperlib</groupId>
             <artifactId>morepaperlib</artifactId>
-            <version>0.4.3</version>
+            <version>0.4.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.github.cryptomorin</groupId>
             <artifactId>XSeries</artifactId>
-            <version>13.0.0</version>
+            <version>13.7.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -103,7 +93,7 @@
         <dependency>
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
-            <version>3.0.2</version>
+            <version>3.2.1</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -119,7 +109,6 @@
         </resources>
 
         <plugins>
-            <!-- Compiler plugin : Java 21 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -144,6 +133,15 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.slf4j:slf4j-api</exclude>
+                                    <exclude>org.slf4j:slf4j-simple</exclude>
+                                    <exclude>com.google.code.findbugs:jsr305</exclude>
+                                    <exclude>org.dom4j:dom4j</exclude>
+                                    <exclude>com.google.code.gson:gson</exclude>
+                                </excludes>
+                            </artifactSet>
                             <relocations>
                                 <relocation>
                                     <pattern>io.github.thatsmusic99.configurationmaster</pattern>
@@ -164,6 +162,10 @@
                                 <relocation>
                                     <pattern>org.reflections</pattern>
                                     <shadedPattern>me.xginko.villageroptimizer.libs.reflections</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>javassist</pattern>
+                                    <shadedPattern>me.xginko.villageroptimizer.libs.javassist</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.bstats</pattern>
@@ -201,4 +203,3 @@
         </plugins>
     </build>
 </project>
-
