@@ -53,6 +53,11 @@ public class RestockOptimizedTrades extends VillagerOptimizerModule implements L
 
     @Override
     public boolean shouldEnable() {
+        // This module is intentionally always active and has no config toggle.
+        // Optimized villagers have their AI disabled, which prevents them from restocking
+        // their trades naturally (they never enter the "work" activity). This module acts
+        // as the mandatory replacement for that vanilla mechanic. Disabling it would leave
+        // optimized villagers permanently trade-locked, making the plugin unusable.
         return true;
     }
 
