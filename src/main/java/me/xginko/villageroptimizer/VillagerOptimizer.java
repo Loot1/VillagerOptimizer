@@ -7,11 +7,7 @@ import me.xginko.villageroptimizer.config.Config;
 import me.xginko.villageroptimizer.config.LanguageCache;
 import me.xginko.villageroptimizer.struct.enums.Permissions;
 import me.xginko.villageroptimizer.modules.VillagerOptimizerModule;
-import me.xginko.villageroptimizer.utils.Util;
 import me.xginko.villageroptimizer.wrapper.WrappedVillager;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -93,7 +89,7 @@ public final class VillagerOptimizer extends JavaPlugin {
         logger.info("Loading config...");
         reloadConfiguration();
         logger.info("Loading translations...");
-        reloadLang(true);
+        reloadLang();
         Permissions.registerAll();
         logger.info("VillagerOptimizer by xGinko enabled successfully !");
     }
@@ -161,7 +157,7 @@ public final class VillagerOptimizer extends JavaPlugin {
     }
 
     public void reloadPlugin() {
-        reloadLang(false);
+        reloadLang();
         reloadConfiguration();
     }
 
@@ -178,7 +174,7 @@ public final class VillagerOptimizer extends JavaPlugin {
         }
     }
 
-    private void reloadLang(boolean logFancy) {
+    private void reloadLang() {
         try {
             final SortedSet<String> availableLocales = getAvailableTranslations();
             if (!config.auto_lang) {
@@ -189,17 +185,11 @@ public final class VillagerOptimizer extends JavaPlugin {
             }
             languageCacheMap = new HashMap<>(availableLocales.size());
             for (String localeString : availableLocales) {
-                if (logFancy) logger.info(Component.text("│                       ").style(Util.PL_STYLE)
-                        .append(Component.text("    "+localeString).color(NamedTextColor.WHITE).decorate(TextDecoration.BOLD))
-                        .append(Component.text("                            │").style(Util.PL_STYLE)));
-                else logger.info(String.format("Found language file for %s", localeString));
+                logger.info("Found language file for {}", localeString);
                 languageCacheMap.put(localeString, new LanguageCache(localeString));
             }
         } catch (Throwable t) {
-            if (logFancy) logger.error(Component.text("│                      ").style(Util.PL_STYLE)
-                    .append(Component.text("LANG ERROR").color(NamedTextColor.RED).decorate(TextDecoration.BOLD))
-                    .append(Component.text("                            │").style(Util.PL_STYLE)), t);
-            else logger.error("Error while loading translation files!", t);
+            logger.error("Error while loading translation files!", t);
         }
     }
 
