@@ -1,7 +1,7 @@
 name: ${project.name}
 version: '${project.version}'
 main: me.xginko.villageroptimizer.VillagerOptimizer
-authors: [ xGinko ]
+authors: [ xGinko, Loot1 ]
 description: ${project.description}
 website: ${project.url}
 api-version: '1.21'
