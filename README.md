@@ -1,4 +1,7 @@
 # VillagerOptimizer
+
+Forked by [Loot1](https://github.com/Loot1) to upgrade to 1.21.11 from 1.20.4.
+
 ## Combat server lag caused by lots of ticking villagers
 
 This plugin enables you and your playerbase to optimize villagers in trading halls or other setups so they still remain their function but don't take up large amounts of resources.
@@ -28,7 +31,6 @@ Other features:
 - Comes with prepackaged translations for en_us, de_de, it_it, ru_ru
 - All plugin messages support the usage of multiple lines and use MiniMessage formatting. This means you can use hex colors, custom click events and much more without needing to be a programmer!
 
-
 ### Found a bug or got an idea for an enhancement? Open an issue or join the [discord](https://discord.com/invite/3UgsYf3qyc)!
 
-# Supports Paper/Folia 1.16 - 1.20.4
+# Supports Paper/Folia 1.16 - 1.21.11
